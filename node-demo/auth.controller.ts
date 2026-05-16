@@ -7,16 +7,36 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { logger } from '../lib/logger.js';
 
+type AuthRequestBody = {
+  email?: string;
+  password?: string;
+};
+
+type AuthUser = {
+  id: string;
+  email: string;
+  passwordHash: string;
+};
+
 // In-memory user store for the demo. Keyed by email.
-const users = new Map<string, { id: string; email: string; passwordHash: string }>();
+const users = new Map<string, AuthUser>();
+
+const readCredentials = (req: Request): AuthRequestBody => req.body as AuthRequestBody;
+
+const hasCredentials = (
+  credentials: AuthRequestBody,
+): credentials is { email: string; password: string } =>
+  typeof credentials.email === 'string' && typeof credentials.password === 'string';
 
 export const authController = {
   register: async (req: Request, res: Response) => {
-    const { email, password } = req.body as { email?: string; password?: string };
+    const credentials = readCredentials(req);
 
-    if (!email || !password) {
+    if (!hasCredentials(credentials)) {
       return res.status(400).json({ error: 'email and password are required' });
     }
+
+    const { email, password } = credentials;
 
     if (users.has(email)) {
       return res.status(409).json({ error: 'email already registered' });
@@ -34,11 +54,13 @@ export const authController = {
   },
 
   login: async (req: Request, res: Response) => {
-    const { email, password } = req.body as { email?: string; password?: string };
+    const credentials = readCredentials(req);
 
-    if (!email || !password) {
+    if (!hasCredentials(credentials)) {
       return res.status(400).json({ error: 'email and password are required' });
     }
+
+    const { email, password } = credentials;
 
     const user = users.get(email);
     if (!user) {
