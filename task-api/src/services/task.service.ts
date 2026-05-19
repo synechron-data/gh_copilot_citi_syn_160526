@@ -1,26 +1,34 @@
-import type { TaskRepository } from '../repositories/task.repository.js';
-import type { CreateTaskInput, ListTasksInput, ListTasksResult, Task, UpdateTaskInput } from '../types/task.js';
+import { NotFoundError } from '../errors/domain-errors.js';
+import { TaskRepository } from '../repositories/task.repository.js';
+import type { CreateTaskInput, UpdateTaskInput, ListTasksQuery, Task, PaginatedResult } from '../types/task.js';
 
 export class TaskService {
-  public constructor(private readonly taskRepository: TaskRepository) {}
+  constructor(private readonly repository: TaskRepository) {}
 
-  public createTask(input: CreateTaskInput): Task {
-    return this.taskRepository.create(input);
+  create(input: CreateTaskInput): Task {
+    return this.repository.create(input);
   }
 
-  public listTasks(input: ListTasksInput): ListTasksResult {
-    return this.taskRepository.findAll(input);
+  findById(id: string): Task | undefined {
+    return this.repository.findById(id);
   }
 
-  public getTaskById(id: string): Task | undefined {
-    return this.taskRepository.findById(id);
+  list(query: ListTasksQuery): PaginatedResult<Task> {
+    return this.repository.findAll(query);
   }
 
-  public updateTask(id: string, input: UpdateTaskInput): Task {
-    return this.taskRepository.update(id, input);
+  update(id: string, input: UpdateTaskInput): Task {
+    const updated = this.repository.update(id, input);
+    if (!updated) {
+      throw new NotFoundError(`Task with id '${id}' not found`);
+    }
+    return updated;
   }
 
-  public deleteTask(id: string): void {
-    this.taskRepository.delete(id);
+  remove(id: string): void {
+    const deleted = this.repository.delete(id);
+    if (!deleted) {
+      throw new NotFoundError(`Task with id '${id}' not found`);
+    }
   }
 }

@@ -1,43 +1,43 @@
-export const taskStatuses = ['todo', 'in_progress', 'done'] as const;
-export const taskPriorities = ['low', 'medium', 'high'] as const;
+export const TASK_STATUSES = ['todo', 'in_progress', 'done'] as const;
+export type TaskStatus = (typeof TASK_STATUSES)[number];
 
-export type TaskStatus = (typeof taskStatuses)[number];
-export type TaskPriority = (typeof taskPriorities)[number];
+export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 export interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  createdAt: string;
-  updatedAt: string;
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly status: TaskStatus;
+  readonly priority: TaskPriority;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 export interface CreateTaskInput {
-  title: string;
-  description?: string;
-  status?: TaskStatus;
-  priority?: TaskPriority;
+  readonly title: string;
+  readonly description?: string;
+  readonly status?: TaskStatus;
+  readonly priority?: TaskPriority;
 }
 
 export interface UpdateTaskInput {
-  title?: string;
-  description?: string;
-  status?: TaskStatus;
-  priority?: TaskPriority;
+  readonly title?: string;
+  readonly description?: string;
+  readonly status?: TaskStatus;
+  readonly priority?: TaskPriority;
 }
 
-export interface ListTasksInput {
-  status?: TaskStatus;
-  priority?: TaskPriority;
-  limit: number;
-  offset: number;
+export interface ListTasksQuery {
+  readonly status?: TaskStatus;
+  readonly priority?: TaskPriority;
+  readonly limit: number;
+  readonly offset: number;
 }
 
-export interface ListTasksResult {
-  data: Task[];
-  total: number;
-  limit: number;
-  offset: number;
+export interface PaginatedResult<T> {
+  readonly data: ReadonlyArray<T>;
+  readonly total: number;
+  readonly limit: number;
+  readonly offset: number;
 }

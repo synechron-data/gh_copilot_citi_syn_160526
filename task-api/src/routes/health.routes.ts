@@ -1,14 +1,10 @@
 import { Router } from 'express';
 
-export function createHealthRoutes(startTime: number): Router {
-  const router = Router();
+const startTime = Date.now();
 
-  router.get('/', (_request, response) => {
-    response.status(200).json({
-      status: 'ok',
-      uptime: Math.floor((Date.now() - startTime) / 1000)
-    });
-  });
+export const healthRoutes = Router();
 
-  return router;
-}
+healthRoutes.get('/', (_req, res) => {
+  const uptimeSeconds = Math.floor((Date.now() - startTime) / 1000);
+  res.status(200).json({ status: 'ok', uptime: uptimeSeconds });
+});

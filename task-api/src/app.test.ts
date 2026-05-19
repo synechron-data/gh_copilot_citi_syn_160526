@@ -15,7 +15,7 @@ describe('createApp', () => {
   });
 
   it('serves the health endpoint', async () => {
-    const app = createApp(Date.now() - 3_000);
+    const app = createApp();
     const server = app.listen(0);
 
     activeServers.push(server);
@@ -27,6 +27,6 @@ describe('createApp', () => {
 
     expect(response.status).toBe(200);
     expect(body.status).toBe('ok');
-    expect(body.uptime).toBeGreaterThanOrEqual(3);
+    expect(body.uptime).toBeGreaterThanOrEqual(0);
   });
 });

@@ -1,17 +1,14 @@
-import express, { type Express } from 'express';
-
-import { errorHandler } from './middleware/error-handler.js';
+import express from 'express';
+import { routes } from './routes/index.js';
 import { requestLogger } from './middleware/request-logger.js';
-import { registerRoutes } from './routes/index.js';
+import { errorHandler } from './middleware/error-handler.js';
 
-export function createApp(startTime = Date.now()): Express {
+export function createApp() {
   const app = express();
 
   app.use(express.json());
   app.use(requestLogger);
-
-  registerRoutes(app, startTime);
-
+  app.use(routes);
   app.use(errorHandler);
 
   return app;

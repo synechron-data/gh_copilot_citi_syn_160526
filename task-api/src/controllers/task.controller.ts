@@ -1,50 +1,42 @@
 import type { Request, Response } from 'express';
-
+import { createTaskSchema, updateTaskSchema, listTasksQuerySchema, taskIdParamSchema } from '../schemas/task.schemas.js';
+import { TaskService } from '../services/task.service.js';
 import { NotFoundError } from '../errors/domain-errors.js';
-import {
-    createTaskSchema,
-    listTasksQuerySchema,
-    taskIdParamSchema,
-    updateTaskSchema
-} from '../schemas/task.schemas.js';
-import type { TaskService } from '../services/task.service.js';
 
 export class TaskController {
-  public constructor(private readonly taskService: TaskService) {}
+  constructor(private readonly service: TaskService) {}
 
-  public async create(request: Request, response: Response): Promise<void> {
-    const input = createTaskSchema.parse(request.body);
-    const task = this.taskService.createTask(input);
-    response.status(201).json(task);
-  }
+  create = (req: Request, res: Response): void => {
+    const body = createTaskSchema.parse(req.body);
+    const task = this.service.create(body);
+    res.status(201).json(task);
+  };
 
-  public async list(request: Request, response: Response): Promise<void> {
-    const query = listTasksQuerySchema.parse(request.query);
-    const result = this.taskService.listTasks(query);
-    response.status(200).json(result);
-  }
+  list = (req: Request, res: Response): void => {
+    const query = listTasksQuerySchema.parse(req.query);
+    const result = this.service.list(query);
+    res.status(200).json(result);
+  };
 
-  public async getById(request: Request, response: Response): Promise<void> {
-    const { id } = taskIdParamSchema.parse(request.params);
-    const task = this.taskService.getTaskById(id);
-
+  getById = (req: Request, res: Response): void => {
+    const { id } = taskIdParamSchema.parse(req.params);
+    const task = this.service.findById(id);
     if (!task) {
-      throw new NotFoundError('Task not found', { id });
+      throw new NotFoundError(`Task with id '${id}' not found`);
     }
+    res.status(200).json(task);
+  };
 
-    response.status(200).json(task);
-  }
+  update = (req: Request, res: Response): void => {
+    const { id } = taskIdParamSchema.parse(req.params);
+    const body = updateTaskSchema.parse(req.body);
+    const task = this.service.update(id, body);
+    res.status(200).json(task);
+  };
 
-  public async update(request: Request, response: Response): Promise<void> {
-    const { id } = taskIdParamSchema.parse(request.params);
-    const input = updateTaskSchema.parse(request.body);
-    const task = this.taskService.updateTask(id, input);
-    response.status(200).json(task);
-  }
-
-  public async remove(request: Request, response: Response): Promise<void> {
-    const { id } = taskIdParamSchema.parse(request.params);
-    this.taskService.deleteTask(id);
-    response.status(204).send();
-  }
+  remove = (req: Request, res: Response): void => {
+    const { id } = taskIdParamSchema.parse(req.params);
+    this.service.remove(id);
+    res.status(204).send();
+  };
 }

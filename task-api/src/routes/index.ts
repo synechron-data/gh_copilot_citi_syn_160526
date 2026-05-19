@@ -1,9 +1,8 @@
-import type { Express } from 'express';
+import { Router } from 'express';
+import { healthRoutes } from './health.routes.js';
+import { taskRoutes } from './task.routes.js';
 
-import { createHealthRoutes } from './health.routes.js';
-import { createTaskRoutes } from './task.routes.js';
+export const routes = Router();
 
-export function registerRoutes(app: Express, startTime: number): void {
-  app.use('/health', createHealthRoutes(startTime));
-  app.use('/tasks', createTaskRoutes());
-}
+routes.use('/health', healthRoutes);
+routes.use('/tasks', taskRoutes);

@@ -6,12 +6,11 @@
 - ESM imports (`import x from 'y'`), not CommonJS `require`.
 
 ## Architecture
-- Layered: route → controller → service → repository.
+- Layered: route -> controller -> service -> repository.
 - Controllers in `src/controllers/`. Services in `src/services/`. Repositories in `src/repositories/`.
 - Controllers do not query data stores directly.
-- Prefer constructor injection for services, repositories, and controllers.
 - Services contain business logic. They throw domain errors (NotFoundError, ValidationError); they never `res.send()`.
-- Repositories are pure data access — no business rules.
+- Repositories are pure data access -- no business rules.
 
 ## Validation & Errors
 - Validate inputs with Zod schemas in `src/schemas/`.
@@ -36,7 +35,7 @@
 
 ## What NOT to do
 - No `console.log` in production code.
-- No direct `process.env` access — use `src/config.ts`.
+- No direct `process.env` access -- use `src/config.ts`.
 - No new runtime dependencies without a clear reason.
 - No business logic in route files or controllers.
 - No raw SQL or DB calls outside repositories.

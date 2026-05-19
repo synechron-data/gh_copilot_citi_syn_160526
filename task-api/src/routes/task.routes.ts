@@ -1,21 +1,17 @@
 import { Router } from 'express';
-
-import { TaskController } from '../controllers/task.controller.js';
 import { asyncHandler } from '../middleware/async-handler.js';
-import { TaskRepository } from '../repositories/task.repository.js';
+import { TaskController } from '../controllers/task.controller.js';
 import { TaskService } from '../services/task.service.js';
+import { TaskRepository } from '../repositories/task.repository.js';
 
-export function createTaskRoutes(): Router {
-  const router = Router();
-  const taskRepository = new TaskRepository();
-  const taskService = new TaskService(taskRepository);
-  const taskController = new TaskController(taskService);
+const repository = new TaskRepository();
+const service = new TaskService(repository);
+const controller = new TaskController(service);
 
-  router.post('/', asyncHandler(taskController.create.bind(taskController)));
-  router.get('/', asyncHandler(taskController.list.bind(taskController)));
-  router.get('/:id', asyncHandler(taskController.getById.bind(taskController)));
-  router.patch('/:id', asyncHandler(taskController.update.bind(taskController)));
-  router.delete('/:id', asyncHandler(taskController.remove.bind(taskController)));
+export const taskRoutes = Router();
 
-  return router;
-}
+taskRoutes.post('/', asyncHandler(controller.create));
+taskRoutes.get('/', asyncHandler(controller.list));
+taskRoutes.get('/:id', asyncHandler(controller.getById));
+taskRoutes.patch('/:id', asyncHandler(controller.update));
+taskRoutes.delete('/:id', asyncHandler(controller.remove));

@@ -1,41 +1,78 @@
-import type { ErrorRequestHandler } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-
-import { AppError } from '../errors/domain-errors.js';
+import { NotFoundError, ValidationError } from '../errors/domain-errors.js';
 import { logger } from '../lib/logger.js';
 
-export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
-  if (error instanceof ZodError) {
-    response.status(400).json({
+interface ErrorResponseBody {
+  error: {
+    code: string;
+    message: string;
+    details: ReadonlyArray<{ path: string; message: string }>;
+  };
+}
+
+export const errorHandler = (
+  err: unknown,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+): void => {
+  if (err instanceof ZodError) {
+    const details = err.issues.map((issue) => ({
+      path: issue.path.join('.'),
+      message: issue.message,
+    }));
+
+    const body: ErrorResponseBody = {
       error: {
         code: 'VALIDATION_FAILED',
         message: 'Request validation failed',
-        details: error.issues.map((issue) => ({
-          path: issue.path.join('.'),
-          message: issue.message
-        }))
-      }
-    });
+        details,
+      },
+    };
+
+    res.status(400).json(body);
     return;
   }
 
-  if (error instanceof AppError) {
-    response.status(error.statusCode).json({
+  if (err instanceof ValidationError) {
+    const body: ErrorResponseBody = {
       error: {
-        code: error.code,
-        message: error.message,
-        details: error.details
-      }
-    });
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      },
+    };
+
+    res.status(400).json(body);
     return;
   }
 
-  logger.error({ err: error }, 'Unhandled application error');
+  if (err instanceof NotFoundError) {
+    const body: ErrorResponseBody = {
+      error: {
+        code: err.code,
+        message: err.message,
+        details: [],
+      },
+    };
 
-  response.status(500).json({
+    res.status(404).json(body);
+    return;
+  }
+
+  const message = err instanceof Error ? err.message : 'An unexpected error occurred';
+  const stack = err instanceof Error ? err.stack : undefined;
+
+  logger.error({ err, stack }, 'Unhandled error');
+
+  const body: ErrorResponseBody = {
     error: {
       code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred'
-    }
-  });
+      message,
+      details: [],
+    },
+  };
+
+  res.status(500).json(body);
 };
